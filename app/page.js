@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { norm } from '../lib/core.mjs';
+import { norm, findAttendee } from '../lib/core.mjs';
 import { TEAM_INFO } from '../lib/teams.mjs';
 
 const LS = { pin: 'ck.pin', cache: 'ck.cache', queue: 'ck.queue', marks: 'ck.marks' };
@@ -28,6 +28,13 @@ const fullName = (a) => {
   const t = a.title || '';
   const sep = /[A-Za-z.]$/.test(t) ? ' ' : '';
   return `${t}${sep}${a.name || ''} ${a.surname || ''}`.trim();
+};
+
+// ตัวเลข → "ชั้นปีที่ 4" ส่วนข้อความอื่น เช่น "อาจารย์" แสดงตามที่กรอก
+const yearText = (y) => {
+  const v = String(y ?? '').trim();
+  if (!v) return '';
+  return /^\d+$/.test(v) ? `ชั้นปีที่ ${v}` : v;
 };
 
 const hhmm = (v) => {
@@ -111,8 +118,11 @@ export default function Station() {
       setOnline(true);
       setError('');
     } catch (e) {
-      setOnline(false);
-      if (!(e instanceof TypeError)) setError(e.message);
+      if (e instanceof TypeError) setOnline(false);
+      else {
+        setOnline(true);
+        setError(e.message);
+      }
     }
   }
 
@@ -134,8 +144,11 @@ export default function Station() {
       setOnline(true);
       setError('');
     } catch (e) {
-      setOnline(false);
-      if (!(e instanceof TypeError)) setError(e.message);
+      if (e instanceof TypeError) setOnline(false);
+      else {
+        setOnline(true);
+        setError(e.message);
+      }
     } finally {
       flushing.current = false;
     }
@@ -149,10 +162,9 @@ export default function Station() {
   function handleScan(raw) {
     const input = String(raw || '').trim();
     if (!input) return;
-    const k = norm(input);
     const { list, marks } = S.current;
     const now = Date.now();
-    const a = list.find((x) => norm(x.rfid) === k) || list.find((x) => norm(x.id) === k);
+    const a = findAttendee(list, input);
 
     if (!a) {
       if (!list.length) {
@@ -313,8 +325,14 @@ export default function Station() {
     fn();
   };
 
-  const status = !online ? 'offline' : queue.length ? 'pending' : 'online';
-  const statusText = !online ? 'ออฟไลน์ · เก็บข้อมูลไว้ในเครื่อง' : queue.length ? 'กำลังส่งข้อมูล' : 'เชื่อมต่อแล้ว';
+  const status = !online || error ? 'offline' : queue.length ? 'pending' : 'online';
+  const statusText = !online
+    ? 'ออฟไลน์ · เก็บข้อมูลไว้ในเครื่อง'
+    : error
+      ? 'เชื่อมต่อฐานข้อมูลไม่ได้ · เก็บข้อมูลไว้ในเครื่อง'
+      : queue.length
+        ? 'กำลังส่งข้อมูล'
+        : 'เชื่อมต่อแล้ว';
 
   return (
     <main className="stage">
@@ -352,8 +370,8 @@ export default function Station() {
             {recent.map(({ k, t, a }) => (
               <li key={k}>
                 <span className="r-time">{hhmm(t)}</span>
-                <span className="r-name">{a.nickname || a.name}</span>
-                <span className="r-team">{a.team}</span>
+                <span className="r-name">{fullName(a)}</span>
+                <span className="r-team">{[yearText(a.year), a.team].filter(Boolean).join(' · ')}</span>
               </li>
             ))}
           </ol>
@@ -451,6 +469,7 @@ function ResultCard({ r }) {
         <span>{fullName({ ...a, surname: '' })}</span> <span>{a.surname}</span>
       </p>
       {a.nickname && <p className="nick">“{a.nickname}”</p>}
+      {yearText(a.year) && <p className="year">{yearText(a.year)}</p>}
       {a.team && (
         <div className="team">
           <span className="team-label">ทีม</span>

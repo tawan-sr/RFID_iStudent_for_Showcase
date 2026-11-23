@@ -1,4 +1,4 @@
-RFID,ID,Title,Name,Surname,Nickname,Team,Status,CheckinTime
-18238379,663040001-1,นาย,ตะวัน,ศรีวิชา,ตุ้ย,Team A,,
-0012345678,663040002-9,นางสาว,ตัวอย่าง,ทดสอบระบบ,มิว,Team B,,
-0087654321,663040003-7,Ms.,Sample,Person,Jay,Team C,,
+RFID,ID,Name,Surname,Year,Team,Status,CheckinTime
+18238379,663040001-1,ตะวัน,ศรีวิชา,4,Team A,,
+0012345678,673040002-9,ตัวอย่าง,ทดสอบระบบ,3,Team B,,
+0087654321,683040003-7,Sample,Person,2,Team C,,

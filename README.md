@@ -9,8 +9,8 @@ Next.js (ขึ้น Vercel ได้) + Google Sheets เป็นฐานข
 
 สร้างชีตแท็บชื่อ **`Attendees`** แถวแรกเป็นหัวคอลัมน์ (ลำดับสลับได้ แต่ชื่อต้องตรง):
 
-| RFID | ID | Title | Name | Surname | Nickname | Team | Status | CheckinTime |
-|---|---|---|---|---|---|---|---|---|
+| RFID | ID | Name | Surname | Year | Team | Status | CheckinTime |
+|---|---|---|---|---|---|---|---|
 
 - `CheckinTime` ไม่บังคับ ถ้ามีระบบจะเขียนเวลาเช็คอินให้
 - ตอนเช็คอิน ระบบจะเขียนคำว่า `เช็คอินแล้ว` ลงช่อง Status
@@ -39,11 +39,13 @@ Next.js (ขึ้น Vercel ได้) + Google Sheets เป็นฐานข
 | `GOOGLE_SHEET_ID` | ไอดีชีต |
 | `SHEET_TAB` | `Attendees` |
 | `GOOGLE_CLIENT_EMAIL` | `client_email` จาก JSON |
-| `GOOGLE_PRIVATE_KEY` | `private_key` จาก JSON (วางทั้งก้อน รวม `-----BEGIN...` และ `\n`) |
+| `GOOGLE_PRIVATE_KEY` | **วางเนื้อหาไฟล์ JSON ทั้งไฟล์** (ง่ายสุด) หรือวางเฉพาะค่า `private_key` ก็ได้ |
 | `STATION_PIN` | PIN สำหรับเครื่องสแกน เช่น `2468` |
 
 4. Deploy → เปิดลิงก์ → ใส่ PIN ครั้งเดียว เครื่องจะจำไว้
 
+> ถ้าขึ้น `error:1E08010C:DECODER routines::unsupported` แปลว่าค่า `GOOGLE_PRIVATE_KEY` ไม่ครบหรือผิดรูปแบบ ให้ลบแล้ววางเนื้อหาไฟล์ JSON ทั้งไฟล์ใหม่ แล้ว Redeploy
+>
 > อย่าตั้ง `DATA_MODE=local` บน Vercel — Vercel เขียนไฟล์ไม่ได้
 
 ## 4. ใช้งานหน้างาน
