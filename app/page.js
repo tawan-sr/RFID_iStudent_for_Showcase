@@ -344,6 +344,7 @@ export default function Station() {
       </div>
 
       <header className="top">
+        <link rel="icon" href="/my-icon.png" />
         <div className="brand">
           <span className="eyebrow">Check-in Station</span>
           <h1>
