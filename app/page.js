@@ -37,6 +37,15 @@ const yearText = (y) => {
   return /^\d+$/.test(v) ? `ชั้นปีที่ ${v}` : v;
 };
 
+// แปลงรหัสที่นั่ง เช่น "52-B5" → "โซน iStudent 52 · แถว B ที่นั่ง 5" (หรือแสดงค่าตรงๆ)
+const formatSeat = (s) => {
+  const v = String(s ?? '').trim();
+  if (!v || v === '-') return '';
+  const m = /^(\d+)-([A-Z])(\d+)$/i.exec(v);
+  if (m) return `${m[2].toUpperCase()}${m[3]} (โซน ${m[1]})`;
+  return v;
+};
+
 const hhmm = (v) => {
   if (!v) return '';
   if (typeof v === 'number')
@@ -295,14 +304,24 @@ export default function Station() {
   }
 
   function exportBackup() {
-    const rows = [['RFID', 'ID', 'Title', 'Name', 'Surname', 'Nickname', 'Team', 'CheckinTime']];
+    const rows = [['RFID', 'ID', 'Title', 'Name', 'Surname', 'Nickname', 'Team', 'Seat', 'CheckinTime']];
     Object.entries(marks)
       .sort((x, y) => x[1] - y[1])
       .forEach(([k, t]) => {
         const a = byKey.get(k) || { rfid: k };
-        rows.push([a.rfid, a.id, a.title, a.name, a.surname, a.nickname, a.team, new Date(t).toLocaleString('sv-SE', { timeZone: 'Asia/Bangkok' })]);
+        rows.push([
+          a.rfid,
+          a.id,
+          a.title,
+          a.name,
+          a.surname,
+          a.nickname,
+          a.team,
+          a.seat || '',
+          new Date(t).toLocaleString('sv-SE', { timeZone: 'Asia/Bangkok' }),
+        ]);
       });
-    const csv = '﻿' + rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csv = '\uFEFF' + rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;
@@ -372,7 +391,9 @@ export default function Station() {
               <li key={k}>
                 <span className="r-time">{hhmm(t)}</span>
                 <span className="r-name">{fullName(a)}</span>
-                <span className="r-team">{[yearText(a.year), a.team].filter(Boolean).join(' · ')}</span>
+                <span className="r-team">
+                  {[yearText(a.year), a.team, formatSeat(a.seat) ? `ที่นั่ง ${formatSeat(a.seat)}` : ''].filter(Boolean).join(' · ')}
+                </span>
               </li>
             ))}
           </ol>
@@ -462,6 +483,8 @@ function ResultCard({ r }) {
   const a = r.a;
   const info = TEAM_INFO[a.team];
   const ok = r.kind === 'ok';
+  const seatLabel = formatSeat(a.seat);
+
   return (
     <div className={`card ${ok ? 'card-ok' : 'card-dup'}`} key={r.at}>
       <div className="mark">{ok ? '✓' : '!'}</div>
@@ -476,6 +499,12 @@ function ResultCard({ r }) {
           <span className="team-label">ทีม</span>
           <span className="team-name">{a.team}</span>
           {info?.note && <span className="team-note">{info.note}</span>}
+        </div>
+      )}
+      {seatLabel && (
+        <div className="team" style={{ marginTop: 8 }}>
+          <span className="team-label">ที่นั่ง</span>
+          <span className="team-name">{seatLabel}</span>
         </div>
       )}
     </div>
