@@ -37,12 +37,12 @@ const yearText = (y) => {
   return /^\d+$/.test(v) ? `ชั้นปีที่ ${v}` : v;
 };
 
-// แปลงรหัสที่นั่ง เช่น "52-B5" → "โซน iStudent 52 · แถว B ที่นั่ง 5" (หรือแสดงค่าตรงๆ)
+// แปลงรหัสที่นั่ง เช่น "52-B5" → "B5 (โซน iStudent 52)" หรือแสดงตามค่าในช่อง Seat
 const formatSeat = (s) => {
   const v = String(s ?? '').trim();
   if (!v || v === '-') return '';
   const m = /^(\d+)-([A-Z])(\d+)$/i.exec(v);
-  if (m) return `${m[2].toUpperCase()}${m[3]} (โซน ${m[1]})`;
+  if (m) return `${m[2].toUpperCase()}${m[3]} (โซน iStudent ${m[1]})`;
   return v;
 };
 
@@ -392,7 +392,13 @@ export default function Station() {
                 <span className="r-time">{hhmm(t)}</span>
                 <span className="r-name">{fullName(a)}</span>
                 <span className="r-team">
-                  {[yearText(a.year), a.team, formatSeat(a.seat) ? `ที่นั่ง ${formatSeat(a.seat)}` : ''].filter(Boolean).join(' · ')}
+                  {[
+                    yearText(a.year),
+                    a.team,
+                    formatSeat(a.seat) ? `ที่นั่ง ${formatSeat(a.seat)}` : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </span>
               </li>
             ))}
